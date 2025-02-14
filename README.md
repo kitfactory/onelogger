@@ -19,6 +19,13 @@ OneLogger is a lightweight logging library built to help you dynamically configu
   - **Python ≥ 3.13**: Uses the standard logging module for full compatibility.
 
 ## Installation 🛠️
+
+### For Users 👥
+```bash
+pip install onelogger
+```
+
+### For Developers 🛠️
 1. **Clone the Repository**
    ```bash
    git clone <repository-url>
@@ -34,9 +41,9 @@ OneLogger is a lightweight logging library built to help you dynamically configu
    source .venv/bin/activate
    ```
 
-3. **Install Dependencies**
+3. **Install Development Dependencies**
    ```bash
-   pip install -e .
+   pip install -e ".[dev]"
    ```
 
 ## Usage 🚀

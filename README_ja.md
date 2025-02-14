@@ -20,6 +20,13 @@ Python の標準 logging モジュールをベースにし、Python 3.12 まで�
   - **Python 3.13 以降**: 標準の logging モジュールを利用
 
 ## インストール手順
+
+### ライブラリ利用者向け 👥
+```bash
+pip install onelogger
+```
+
+### 開発者向け 🛠️
 1. **リポジトリのクローン**
    ```bash
    git clone <repository-url>
@@ -35,9 +42,9 @@ Python の標準 logging モジュールをベースにし、Python 3.12 まで�
    source .venv/bin/activate
    ```
 
-3. **依存パッケージのインストール**
+3. **開発用依存パッケージのインストール**
    ```bash
-   pip install -e .
+   pip install -e ".[dev]"
    ```
 
 ## 使い方
