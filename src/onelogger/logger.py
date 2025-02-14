@@ -5,6 +5,7 @@ Core logger implementation
 
 import os
 import sys
+import re
 if sys.version_info >= (3, 13):
     import logging
     from logging import getLogger, StreamHandler, Formatter
@@ -30,10 +31,42 @@ class PlainFormatter(Formatter):
         datefmt (str): Date format string / 日付フォーマット文字列
         style (str): Format style, default '%' / フォーマットスタイル（デフォルトは '%'）
         log_stacktrace (bool): Whether to include exception stacktrace / 例外トレースの出力有無
+        strip_colors (bool): Whether to remove ANSI color codes / ANSIカラーコードを除去するかどうか
     """
-    def __init__(self, fmt=None, datefmt=None, style='%', log_stacktrace=True):
+    # ANSI escape sequence pattern for color codes
+    # ANSIエスケープシーケンスのパターン（色コード用）
+    ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    # ANSI color codes for different log levels
+    # 各ログレベルに対応するANSIカラーコード
+    COLORS = {
+        'DEBUG': '\033[36m',     # Cyan
+        'INFO': '\033[32m',      # Green
+        'WARNING': '\033[33m',   # Yellow
+        'ERROR': '\033[31m',     # Red
+        'CRITICAL': '\033[35m',  # Magenta
+        'RESET': '\033[0m'
+    }
+
+    def __init__(self, fmt=None, datefmt=None, style='%', log_stacktrace=True, strip_colors=False):
         super().__init__(fmt, datefmt=datefmt, style=style)
         self.log_stacktrace = log_stacktrace
+        self.strip_colors = strip_colors
+
+    def format(self, record):
+        """
+        Format the log record, optionally removing ANSI color codes.
+        ログレコードを整形し、必要に応じてANSIカラーコードを除去する。
+        """
+        # Add color to the level name if colors are enabled
+        if not self.strip_colors:
+            color = self.COLORS.get(record.levelname, '')
+            if color:
+                record.levelname = f"{color}{record.levelname}{self.COLORS['RESET']}"
+
+        formatted = super().format(record)
+        if self.strip_colors:
+            return self.ANSI_ESCAPE.sub('', formatted)
+        return formatted
 
     def formatException(self, ei):
         # If stack trace logging is disabled, return empty string
@@ -53,10 +86,24 @@ class JSONFormatter(Formatter):
     
     Args:
         datefmt (str): Date format string / 日付フォーマット文字列
+        strip_colors (bool): Whether to remove ANSI color codes / ANSIカラーコードを除去するかどうか
     """
-    def __init__(self, fmt=None, datefmt=None):
+    ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+    # Add color codes
+    COLORS = {
+        'DEBUG': '\033[36m',     # Cyan
+        'INFO': '\033[32m',      # Green
+        'WARNING': '\033[33m',   # Yellow
+        'ERROR': '\033[31m',     # Red
+        'CRITICAL': '\033[35m',  # Magenta
+        'RESET': '\033[0m'
+    }
+
+    def __init__(self, fmt=None, datefmt=None, strip_colors=False):
         # JSONの場合はフォーマット文字列は不要なのでNoneを指定
         super().__init__(fmt=None, datefmt=datefmt)
+        self.strip_colors = strip_colors
     
     def formatTime(self, record, datefmt=None):
         """
@@ -82,19 +129,33 @@ class JSONFormatter(Formatter):
 
     def format(self, record):
         """
-        Format the log record as JSON.
-        ログレコードをJSON形式に整形する。
+        Format the log record as JSON, optionally removing ANSI color codes.
+        ログレコードをJSON形式に整形し、必要に応じてANSIカラーコードを除去する。
         """
+        message = record.getMessage()
+        if self.strip_colors:
+            message = self.ANSI_ESCAPE.sub('', message)
+
+        # Add color to the level name if colors are enabled
+        level = record.levelname
+        if not self.strip_colors:
+            color = self.COLORS.get(record.levelname, '')
+            if color:
+                level = f"{color}{level}{self.COLORS['RESET']}"
+
         record_dict = {
-            "timestamp": self.formatTime(record, self.datefmt),  # datefmt を使用して整形
+            "timestamp": self.formatTime(record, self.datefmt),
             "logger": record.name,
-            "level": record.levelname,
-            "message": record.getMessage()
+            "level": level,
+            "message": message
         }
 
-        # 例外情報がある場合は追加
+        # 例外情報がある場合は追加し、ANSIエスケープシーケンスを除去
         if record.exc_info:
-            record_dict['exc_info'] = self.formatException(record.exc_info)
+            exc_text = self.formatException(record.exc_info)
+            if self.strip_colors:
+                exc_text = self.ANSI_ESCAPE.sub('', exc_text)
+            record_dict['exc_info'] = exc_text
 
         return json.dumps(record_dict)
 
@@ -167,6 +228,7 @@ class OneLogger:
             LOG_STACKTRACE: Include exception stacktrace (true/false) / スタックトレースの出力有無
             LOG_ASYNC: Enable asynchronous logging (true/false) / 非同期ロギングの有効化
             LOG_INCLUDE_SOURCE: Include source information (filename and line number) in logs (true/false) / ソース情報の出力有無
+            LOG_STRIP_COLORS: Whether to remove ANSI color codes from logs (true/false) / ログからANSIカラーコードを除去するかどうか
         """
         # Clear any existing handlers
         self._logger.handlers = []
@@ -185,13 +247,14 @@ class OneLogger:
         log_stacktrace = os.getenv("LOG_STACKTRACE", "true").lower() == "true"
         log_async = os.getenv("LOG_ASYNC", "false").lower() == "true"
         log_include_source = os.getenv("LOG_INCLUDE_SOURCE", "false").lower() == "true"
+        log_strip_colors = os.getenv("LOG_STRIP_COLORS", "false").lower() == "true"
 
         # Set logger level using picologging's level attributes
         self._logger.setLevel(getattr(LOGGER_LIB, log_level, LOGGER_LIB.INFO))
 
         # Create formatter based on the chosen log format
         if log_format == "json":
-            formatter = JSONFormatter(datefmt=log_ts_format)
+            formatter = JSONFormatter(datefmt=log_ts_format, strip_colors=log_strip_colors)
         else:
             # Build a plain format string with optional source info (filename and line) plus optional PID, thread, and application name.
             format_parts = ["%(asctime)s", "%(name)s"]
@@ -206,7 +269,9 @@ class OneLogger:
             format_parts.append("%(levelname)s:")
             format_parts.append("%(message)s")
             plain_format = " ".join(format_parts)
-            formatter = PlainFormatter(plain_format, datefmt=log_ts_format, log_stacktrace=log_stacktrace)
+            formatter = PlainFormatter(plain_format, datefmt=log_ts_format, 
+                                     log_stacktrace=log_stacktrace,
+                                     strip_colors=log_strip_colors)
 
         # Prepare handlers list based on output destination
         handlers = []
@@ -214,7 +279,11 @@ class OneLogger:
         # Console output handler
         if log_output in ("console", "both"):
             ch = StreamHandler()
-            ch.setFormatter(formatter)
+            # コンソール出力用のフォーマッタはカラーを保持
+            console_formatter = PlainFormatter(plain_format, datefmt=log_ts_format, 
+                                            log_stacktrace=log_stacktrace,
+                                            strip_colors=False)  # カラーを保持
+            ch.setFormatter(console_formatter)
             handlers.append(ch)
 
         # File output handler with rotation if required
@@ -225,12 +294,14 @@ class OneLogger:
             else:
                 from picologging.handlers import TimedRotatingFileHandler, RotatingFileHandler
             if rotation_type == "date":
-                # Timed rotation (daily) / 日付ベースのローテーション（毎日）
                 fh = TimedRotatingFileHandler(file_path, when="midnight")
             else:
-                # Size-based rotation / サイズベースのローテーション
                 fh = RotatingFileHandler(file_path, maxBytes=max_file_size, backupCount=backup_count)
-            fh.setFormatter(formatter)
+            # ファイル出力用のフォーマッタはカラーを除去設定に従う
+            file_formatter = PlainFormatter(plain_format, datefmt=log_ts_format,
+                                          log_stacktrace=log_stacktrace,
+                                          strip_colors=log_strip_colors)
+            fh.setFormatter(file_formatter)
             handlers.append(fh)
 
         # If asynchronous logging is enabled, set up QueueHandler and QueueListener

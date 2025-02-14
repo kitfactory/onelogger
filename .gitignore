@@ -8,10 +8,17 @@ wheels/
 python-version.txt
 dist/
 .python-version
+.coverage
 
 # Virtual environments
 .venv
 
+# examples
+color_example.log
+color_message.log
+example.log
+
+.env.example
 
 
-
+# 

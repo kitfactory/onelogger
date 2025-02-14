@@ -109,6 +109,19 @@ Contributions are welcome! Please follow best practices and add tests as necessa
 ## License 📄
 This project is licensed under the MIT License.
 
+## Color Support 🎨
+
+OneLogger supports ANSI color codes in log messages:
+- Console output shows colored messages (when supported)
+- File output can strip color codes (configurable via `LOG_STRIP_COLORS`)
+
+### Windows Users
+Color support is automatically enabled on Windows 10 and later. For earlier versions, you might need to use Windows Terminal or another terminal that supports ANSI colors.
+
+### Environment Variables
+- `LOG_STRIP_COLORS`: Set to "true" to remove color codes from file output (default: "false")
+- `NO_COLOR`: Set to any value to disable colors completely
+
 ---
 
 Enjoy fast and configurable logging with OneLogger! 🎉
