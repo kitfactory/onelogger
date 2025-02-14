@@ -53,24 +53,50 @@ class JSONFormatter(Formatter):
     
     Args:
         datefmt (str): Date format string / 日付フォーマット文字列
-        log_stacktrace (bool): Whether to include exception stacktrace / 例外トレースの出力有無
     """
-    def __init__(self, datefmt=None, log_stacktrace=True):
-        # Format string is not used since JSON output is constructed via dict
-        # JSON出力は dict で構築するため、fmt は使用しない
+    def __init__(self, fmt=None, datefmt=None):
+        # JSONの場合はフォーマット文字列は不要なのでNoneを指定
         super().__init__(fmt=None, datefmt=datefmt)
-        self.log_stacktrace = log_stacktrace
+    
+    def formatTime(self, record, datefmt=None):
+        """
+        Format the creation time of the record.
+        レコードの作成時刻を整形する。
+        
+        Args:
+            record: LogRecord instance / ログレコードのインスタンス
+            datefmt (str): Date format string / 日付フォーマット文字列
+        Returns:
+            str: Formatted timestamp / 整形済みタイムスタンプ
+        """
+        import time
+        # デフォルトのコンバータをセット（存在しない場合）
+        if not hasattr(self, "converter"):
+            self.converter = time.localtime
+        ct = self.converter(record.created)
+        if datefmt:
+            s = time.strftime(datefmt, ct)
+        else:
+            s = time.strftime("%Y-%m-%d %H:%M:%S", ct)
+        return s
 
     def format(self, record):
-        log_record = {
-            "timestamp": self.formatTime(record, self.datefmt),
+        """
+        Format the log record as JSON.
+        ログレコードをJSON形式に整形する。
+        """
+        record_dict = {
+            "timestamp": self.formatTime(record, self.datefmt),  # datefmt を使用して整形
             "logger": record.name,
             "level": record.levelname,
             "message": record.getMessage()
         }
-        if record.exc_info and self.log_stacktrace:
-            log_record["exception"] = self.formatException(record.exc_info)
-        return json.dumps(log_record)
+
+        # 例外情報がある場合は追加
+        if record.exc_info:
+            record_dict['exc_info'] = self.formatException(record.exc_info)
+
+        return json.dumps(record_dict)
 
 # ---------------------------------------------------------------------
 # OneLogger
@@ -165,7 +191,7 @@ class OneLogger:
 
         # Create formatter based on the chosen log format
         if log_format == "json":
-            formatter = JSONFormatter(datefmt=log_ts_format, log_stacktrace=log_stacktrace)
+            formatter = JSONFormatter(datefmt=log_ts_format)
         else:
             # Build a plain format string with optional source info (filename and line) plus optional PID, thread, and application name.
             format_parts = ["%(asctime)s", "%(name)s"]
