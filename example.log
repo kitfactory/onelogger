@@ -1,0 +1,21 @@
+2025-02-14 11:25:29 example_logger [<unknown>:0] [ExampleApp] [PID:28384] [TID:17568] INFO: This is an informational message. / これは情報メッセージです。
+2025-02-14 11:25:29 example_logger [<unknown>:0] [ExampleApp] [PID:28384] [TID:17568] ERROR: An exception occurred while performing a division. / 除算処理中に例外が発生しました。
+Traceback (most recent call last):
+  File "C:\Users\kitad\workspace\onelogger\examples\example_logger.py", line 27, in <module>
+    result = 1 / 0
+             ~~^~~
+ZeroDivisionError: division by zero
+2025-02-14 11:26:08 example_logger [<unknown>:0] [ExampleApp] [PID:19164] [TID:14192] INFO: This is an informational message. / これは情報メッセージです。
+2025-02-14 11:26:08 example_logger [<unknown>:0] [ExampleApp] [PID:19164] [TID:14192] ERROR: An exception occurred while performing a division. / 除算処理中に例外が発生しました。
+Traceback (most recent call last):
+  File "C:\Users\kitad\workspace\onelogger\examples\example_logger.py", line 27, in <module>
+    result = 1 / 0
+             ~~^~~
+ZeroDivisionError: division by zero
+2025-02-14 11:30:08 example_logger [<unknown>:0] [ExampleApp] [PID:19348] [TID:3100] INFO: This is an informational message. / これは情報メッセージです。
+2025-02-14 11:30:08 example_logger [<unknown>:0] [ExampleApp] [PID:19348] [TID:3100] ERROR: An exception occurred while performing a division. / 除算処理中に例外が発生しました。
+Traceback (most recent call last):
+  File "C:\Users\kitad\workspace\onelogger\examples\example_logger.py", line 27, in <module>
+    result = 1 / 0
+             ~~^~~
+ZeroDivisionError: division by zero
