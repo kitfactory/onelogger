@@ -160,4 +160,63 @@ def test_log_levels(env_setup, temp_log_file):
         assert "DEBUG" in log_content
         assert "INFO" in log_content
         assert "WARNING" in log_content
-        assert "ERROR" in log_content 
+        assert "ERROR" in log_content
+
+def test_color_stripping(env_setup, temp_log_file):
+    """
+    Test that ANSI color codes are properly stripped when configured.
+    ANSIカラーコードが設定に応じて適切に除去されることをテスト。
+    """
+    # Update environment to enable color stripping
+    os.environ["LOG_STRIP_COLORS"] = "true"
+    
+    logger = Logger.get_logger("test_color_logger")
+    colored_message = "\033[31mError:\033[0m Test message"
+    logger.info(colored_message)
+
+    # Check file content - should not contain color codes
+    with open(temp_log_file, 'r') as f:
+        log_content = f.read()
+        assert "\033[31m" not in log_content
+        assert "\033[0m" not in log_content
+        assert "Error: Test message" in log_content
+
+def test_color_preservation(env_setup, temp_log_file):
+    """
+    Test that ANSI color codes are preserved when stripping is disabled.
+    カラーコードの除去が無効な場合、ANSIカラーコードが保持されることをテスト。
+    """
+    # Update environment to disable color stripping
+    os.environ["LOG_STRIP_COLORS"] = "false"
+    
+    logger = Logger.get_logger("test_color_logger")
+    colored_message = "\033[31mError:\033[0m Test message"
+    logger.info(colored_message)
+
+    # Check file content - should contain color codes
+    with open(temp_log_file, 'r') as f:
+        log_content = f.read()
+        assert "\033[31m" in log_content
+        assert "\033[0m" in log_content
+
+def test_json_color_stripping(env_setup, temp_log_file):
+    """
+    Test that ANSI color codes are properly stripped in JSON format when configured.
+    JSON形式でANSIカラーコードが設定に応じて適切に除去されることをテスト。
+    """
+    os.environ.update({
+        "LOG_FORMAT": "json",
+        "LOG_STRIP_COLORS": "true"
+    })
+    
+    logger = Logger.get_logger("test_json_color_logger")
+    colored_message = "\033[31mError:\033[0m Test message"
+    logger.info(colored_message)
+
+    # Check JSON content
+    with open(temp_log_file, 'r') as f:
+        for line in f:
+            log_entry = json.loads(line.strip())
+            assert "\033[31m" not in log_entry["message"]
+            assert "\033[0m" not in log_entry["message"]
+            assert "Error: Test message" in log_entry["message"] 

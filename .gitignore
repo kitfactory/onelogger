@@ -18,7 +18,9 @@ color_example.log
 color_message.log
 example.log
 
+# Environment files
 .env.example
+.env
 
 
 # 
