@@ -327,7 +327,14 @@ class OneLogger:
         if hasattr(self, "_listener"):
             self._listener.stop()
 
-    def info(self, message: str) -> None:
+    def debug(self, mesasge, *args, **kwargs) -> None:
+        """
+        Log message at DEBUG level
+        DEBUGレベルでメッセージをログに記録する
+        """
+        self._logger.debug(mesasge, *args, **kwargs)
+
+    def info(self, message: str, *args, **kwargs) -> None:
         """
         Log message at INFO level
         INFOレベルでメッセージをログに記録する
@@ -336,9 +343,16 @@ class OneLogger:
             message (str): Message to log
                          ログに記録するメッセージ
         """
-        self._logger.info(message)
+        self._logger.info(message, *args, **kwargs)
 
-    def error(self, message: str) -> None:
+    def warning(self, message: str, *args, **kwargs) -> None:
+        """
+        Log message at WARNING level
+        WARNINGレベルでメッセージをログに記録する
+        """
+        self._logger.warning(message, *args, **kwargs)
+
+    def error(self, message: str, *args, **kwargs) -> None:
         """
         Log message at ERROR level
         ERRORレベルでメッセージをログに記録する
@@ -347,4 +361,11 @@ class OneLogger:
             message (str): Message to log
                          ログに記録するメッセージ
         """
-        self._logger.error(message) 
+        self._logger.error(message, *args, **kwargs)
+
+    def exception(self, message: str, *args, **kwargs) -> None:
+        """
+        Log message at ERROR level with exception stacktrace
+        ERRORレベルでメッセージと例外スタックトレースをログに記録する
+        """
+        self._logger.exception(message, *args, **kwargs)

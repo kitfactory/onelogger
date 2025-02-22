@@ -7,8 +7,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "onelogger"
-version = "0.1.1"
-description = "Add your description here"
+version = "0.1.2"
+description = "Oneenv-based settings management and fast logging library"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
