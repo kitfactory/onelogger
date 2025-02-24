@@ -332,6 +332,8 @@ class OneLogger:
         Log message at DEBUG level
         DEBUGレベルでメッセージをログに記録する
         """
+        # Add default stacklevel to capture correct caller information / 呼び出し元情報を正しく取得するために、デフォルトのstacklevelを追加
+        kwargs.setdefault('stacklevel', 2)
         self._logger.debug(mesasge, *args, **kwargs)
 
     def info(self, message: str, *args, **kwargs) -> None:
@@ -340,9 +342,10 @@ class OneLogger:
         INFOレベルでメッセージをログに記録する
 
         Args:
-            message (str): Message to log
-                         ログに記録するメッセージ
+            message (str): Message to log / ログに記録するメッセージ
         """
+        # Add default stacklevel to capture correct caller information / 呼び出し元情報を正しく取得するために、デフォルトのstacklevelを追加
+        kwargs.setdefault('stacklevel', 2)
         self._logger.info(message, *args, **kwargs)
 
     def warning(self, message: str, *args, **kwargs) -> None:
@@ -350,6 +353,8 @@ class OneLogger:
         Log message at WARNING level
         WARNINGレベルでメッセージをログに記録する
         """
+        # Add default stacklevel to capture correct caller information / 呼び出し元情報を正しく取得するために、デフォルトのstacklevelを追加
+        kwargs.setdefault('stacklevel', 2)
         self._logger.warning(message, *args, **kwargs)
 
     def error(self, message: str, *args, **kwargs) -> None:
@@ -358,9 +363,10 @@ class OneLogger:
         ERRORレベルでメッセージをログに記録する
 
         Args:
-            message (str): Message to log
-                         ログに記録するメッセージ
+            message (str): Message to log / ログに記録するメッセージ
         """
+        # Add default stacklevel to capture correct caller information / 呼び出し元情報を正しく取得するために、デフォルトのstacklevelを追加
+        kwargs.setdefault('stacklevel', 2)
         self._logger.error(message, *args, **kwargs)
 
     def exception(self, message: str, *args, **kwargs) -> None:
@@ -368,4 +374,6 @@ class OneLogger:
         Log message at ERROR level with exception stacktrace
         ERRORレベルでメッセージと例外スタックトレースをログに記録する
         """
+        # Add default stacklevel to capture correct caller information / 呼び出し元情報を正しく取得するために、デフォルトのstacklevelを追加
+        kwargs.setdefault('stacklevel', 2)
         self._logger.exception(message, *args, **kwargs)
